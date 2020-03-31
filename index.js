@@ -37,6 +37,8 @@ Indledende kommentarer:
             a. run npm install body-parser
         11. Express FileUpload
             a. run "npm install --save express-fileupload"
+        12. bcrypt password encrypting
+            a. run "npm i --save bcrypt" i terminalen
  */
 
 //Importerer express modulet.
@@ -96,6 +98,18 @@ app.get('/contact', contact);
 // Beder newPostController variablen om at hente dens sti.
 const newPostController = require('./controllers/newPost');
 app.get('/posts/new',newPostController);
+
+const newUserController = require('./controllers/newUser');
+app.get('/auth/register', newUserController);
+
+const storeUserController = require('./controllers/storeUser');
+app.post('/users/register', storeUserController);
+
+const loginController = require('./controllers/login');
+app.get('/auth/login', loginController);
+
+const loginUserController = require('./controllers/loginUser');
+app.post('/users/login', loginUserController);
 
 //Lytter på port 4000 af localhost og consol.logger en besked
 app.listen(4000, ()=>{
