@@ -39,6 +39,8 @@ Indledende kommentarer:
             a. run "npm install --save express-fileupload"
         12. bcrypt password encrypting
             a. run "npm i --save bcrypt" i terminalen
+        13. Express Sessions
+            a. Run "npm install --save express-session"
  */
 
 //Importerer express modulet.
@@ -69,11 +71,21 @@ app.use(bodyParser.urlencoded({extended:true}));
 const fileUpload = require('express-fileupload');
 app.use(fileUpload());
 
+/* Importerer express-session pakke
+Vi registrere expressSession middleware og
+giver et configuration object med en secret value som property */
+const expressSession = require('express-session');
+app.use(expressSession({
+    secret: 'keyboard cat'
+}));
+
 //Importerer modulet vi selv har lavet (den indeholder vores validation af formen).
 const validateMiddleware = require('./middleware/validationMiddleware');
 // Beder validateMiddleware om at køre inden posts/store
 // posts/store referer til storePost.js som bruger BlogPost.js til at gemme data fra form + billede
 app.use('/posts/store', validateMiddleware);
+
+const redirectIfAuthenticatedMiddleware = require('./middleware/redirectIfAuthenticatedMiddleware');
 
 // Beder homeController variablen om at hente dens sti.
 const homeController = require('./controllers/home');
@@ -100,16 +112,24 @@ const newPostController = require('./controllers/newPost');
 app.get('/posts/new',newPostController);
 
 const newUserController = require('./controllers/newUser');
-app.get('/auth/register', newUserController);
+app.get('/auth/register', redirectIfAuthenticatedMiddleware, newUserController);
 
 const storeUserController = require('./controllers/storeUser');
-app.post('/users/register', storeUserController);
+app.post('/users/register', redirectIfAuthenticatedMiddleware, storeUserController);
 
 const loginController = require('./controllers/login');
-app.get('/auth/login', loginController);
+app.get('/auth/login', redirectIfAuthenticatedMiddleware, loginController);
 
 const loginUserController = require('./controllers/loginUser');
-app.post('/users/login', loginUserController);
+app.post('/users/login', redirectIfAuthenticatedMiddleware, loginUserController);
+
+/* Importerer authMiddleware.
+Herefter kaldes authMiddleware inden vi kalder newPostController.
+Det samme gøres med storePostController som sidstnævnte.
+Dette betyder at en uautoriseret bruger ikke kan tilgå new post eller blog post */
+const authMiddleware = require('./middleware/authMiddleware');
+app.get('/posts/new', authMiddleware, newPostController);
+app.get('/posts/new', authMiddleware, storePostController);
 
 //Lytter på port 4000 af localhost og consol.logger en besked
 app.listen(4000, ()=>{
