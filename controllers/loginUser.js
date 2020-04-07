@@ -17,10 +17,13 @@ Session pakken gemmer denne data på userens browser så hver gang brugeren lave
 vil cookien blive sendt tilbage til serveren med godkendte id. Sådan ved vi brugeren er logget ind */
     User.findOne({username:username}, (error, user) =>{
         if (user) {
-            bcrypt.compare(password, user.password, (error, same) =>{
+            bcrypt.compare(password, user.password, (error, same) => {
                 if (same) {
                     req.session.userId = user._id;
                     res.redirect('/')
+                }
+                else {
+                    res.redirect('/auth/login')
                 }
             })
         }
